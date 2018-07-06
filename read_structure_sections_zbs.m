@@ -1,3 +1,4 @@
+function [nstrsect, ncut, sectname, sectdesc] = read_structure_sections_zbs(path_of_analysis)
 % PERFORM 3D Binary Files Reader
 % by Baris Erkus
 %
@@ -28,25 +29,31 @@
 % interface), search this file to get the section number. The number of cut
 % elements can act as a check.
 
-clear all; close all;
-
 file_name = 'ZBS';
-fileID = fopen(file_name);
+file_path = [path_of_analysis, '\', file_name];
+fileID = fopen(file_path);
 
 for i = 1:1
     % Control Record
     nstrsect = fread(fileID, [1,1], 'integer*4');     %Number of structure sections
     
     %temp readings
-    temp.sectname{i,1} = fread(fileID, [1,8],  '*char');
-    temp.sectdesc{i,1} = fread(fileID, [1,40], '*char');
+    temp = fread(fileID, [1,8],  '*char');
+    temp = fread(fileID, [1,40], '*char');
 end
 
+ncut = zeros(nstrsect,1);
+sectname = cell(nstrsect,1);
+sectdesc = cell(nstrsect,1);
 
 %For each drift record
 for i = 1:nstrsect
-    strsect.ncut(i,1) = fread(fileID, [1,1], 'integer*4');      %Number of cut elements
-    strsect.sectname{i,1} = fread(fileID, [1,8],  '*char');     %Section name
-    strsect.sectdesc{i,1} = fread(fileID, [1,40], '*char');     %Section description
+    ncut(i,1) = fread(fileID, [1,1], 'integer*4');      %Number of cut elements
+    sectname{i,1} = fread(fileID, [1,8],  '*char');     %Section name
+    sectdesc{i,1} = fread(fileID, [1,40], '*char');     %Section description
 end
 fclose(fileID);
+
+
+end
+

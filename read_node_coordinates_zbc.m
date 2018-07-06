@@ -1,3 +1,5 @@
+function [nnodes, nodecoord] = read_node_coordinates_zbc(path_of_analysis)
+
 % PERFORM 3D Binary Files Reader
 % by Baris Erkus
 %
@@ -25,10 +27,9 @@
 % Given the coordinates of a node, search this file to obtain the node
 % number.
 
-clear all; close all;
-
 file_name = 'ZBC';
-fileID = fopen(file_name);
+file_path = [path_of_analysis, '\', file_name];
+fileID = fopen(file_path);
 
 
 for i=1:1
@@ -36,19 +37,19 @@ for i=1:1
     nnodes = fread(fileID, [1,1], 'integer*4');    %Number of nodes
     
     %temp readings
-    temp.H1(i,1) = fread(fileID, [1,1], 'integer*4',0,'n')';  %temp reading
-    temp.H2(i,1) = fread(fileID, [1,1], 'real*8',0,'n')';  %temp reading
-    temp.V(i,1)  = fread(fileID, [1,1], 'real*8',0,'n')';  %temp reading
+    temp(i,1) = fread(fileID, [1,1], 'integer*4')';  %temp reading
+    temp(i,1) = fread(fileID, [1,1], 'real*8')';  %temp reading
+    temp(i,1)  = fread(fileID, [1,1], 'real*8')';  %temp reading
 end
 
+nodecoord = zeros(nnodes,3);
 
 for i=1:nnodes
-    nodecoord.H1(i,1) = fread(fileID, [1,1], 'real*8',0,'n')';  %temp reading
-    nodecoord.H2(i,1) = fread(fileID, [1,1], 'real*8',0,'n')';  %temp reading
-    nodecoord.V(i,1)  = fread(fileID, [1,1], 'real*8',0,'n')';  %temp reading
+    nodecoord(i,1) = fread(fileID, [1,1], 'real*8')';  %H1
+    nodecoord(i,2) = fread(fileID, [1,1], 'real*8')';  %H2
+    nodecoord(i,3) = fread(fileID, [1,1], 'real*8')';  %Vert
 end
-
 
 fclose(fileID);
 
-nodecoor = [nodecoord.H1, nodecoord.H2, nodecoord.V];
+end

@@ -1,3 +1,5 @@
+function [analys, avemaxdrift, avemindrift] = read_node_drifts_zdxxx(path_of_analysis)
+
 % PERFORM 3D Binary Files Reader
 % by Baris Erkus
 %
@@ -27,126 +29,65 @@
 
 % See *DRIFT : HORIZONTAL DRIFTS in ECHO.txt for drift numbers.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 4.2 Node Displacements
-
-% File name = ZCxxx, where xxx = analysis number.
-% File type = binary direct access.
-% Record length = 24 bytes (6 REAL*4).
-% Same for static and dynamic.
-
-% Items 1-3 = H1, H2, V translations.
-% Items 4-6 = H1, H2, V rotations.
-
-% The file contains NTIM+1 sets of NNODS records, where NTIM = no.
-% of time or load steps (set 1 = state at start of analysis) and NNODS =
-% no. of nodes.
-
-% See *NODE : NODE COORDINATES in ECHO.txt for node numbers.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 4.3 Node Velocities and Accelerations
-
-% File name = ZLxxx, where xxx = analysis number.
-% File type = binary direct access. Record length = 24 bytes (6 REAL*4).
-% Dynamic analyses only
-
-% Items 1-3 = H1, H2, V translational velocities.
-% Items 4-6 = H1, H2, V translational accelerations.
-% Rotational velocities and accelerations are not saved.
-
-% The file contains NTIM+1 sets of NNODS records, where NTIM = no.
-% of time steps (set 1 = state at start of analysis) and NNODS = no. of
-% nodes.
-
 % See *NODE : NODE COORDINATES in ECHO.txt for node numbers.
 
 
-clear all; close all;
+nanalysis = read_analysis_number(path_of_analysis);
 
-nanalysis = 8;
-NDRFT = 88;
-NNODS = 2786;
+for i = 1:nanalysis
+    file_name{i} = ['ZD', num2str(i,'%03u')];
+    file_path{i} = [path_of_analysis, '\', file_name{i}];
+end
 
-% for i = 1:nanalysis
-%     file_name{i} = ['ZD', num2str(i,'%03u')];
-% end
-% 
-% for i = 1:nanalysis
-%     fileID = fopen(file_name{i});
-%     eofile = 0;
-%   
-%     j = 1;
-%     while eofile == 0;
-%         for k=1:NDRFT
-%             try                
-%                 nodres{i,1}.timset{j,1}.drift(k,1:3) = fread(fileID, [1,3], 'real*4');               
-%             catch
-%                 eofile = 1;
-%                 nodres{i,1}.timen = j-1;
-%                 disp(['End of file reached. Time No: ', num2str(nodres{i,1}.timen)]);
-%                 break;
-%             end          
-%         end
-%         j = j+1;       
-%     end
-%     
-%     fclose(fileID);
-%     
-% end
-% 
-% save nodedrifts.mat
-% 
-% 
-% 
-% 
-% for i = 1:nanalysis
-%     file_name{i} = ['ZC', num2str(i,'%03u')];
-% end
-% 
-% for i = 2:2
-%     fileID = fopen(file_name{i});
-%     eofile = 0;
-%   
-%     j = 1;
-%     while eofile == 0;
-%         for k=1:NNODS
-%             try                
-%                 nodres{i,1}.timset{j,1}.disps(k,1:6) = fread(fileID, [1,6], 'real*4');               
-%             catch
-%                 eofile = 1;
-%                 nodres{i,1}.timen = j-1;
-%                 disp(['End of file reached. Time No: ', num2str(nodres{i,1}.timen)]);
-%                 break;
-%             end          
-%         end
-%         j = j+1;
-%     end
-%     fclose(fileID);    
-% end
+[NDRFT, temp1, temp2, temp3] = read_drifts_zbd(path_of_analysis);
 
 
 for i = 1:nanalysis
-    file_name{i} = ['ZL', num2str(i,'%03u')];
-end
-
-for i = 2:2
-    fileID = fopen(file_name{i});
+    fileID = fopen(file_path{i});
     eofile = 0;
-  
+    
     j = 1;
     while eofile == 0;
-        for k=1:NNODS
-            try                
-                nodres{i,1}.timset{j,1}.velacc(k,1:6) = fread(fileID, [1,6], 'real*4');               
+        for k=1:NDRFT
+            try
+                analys{i,1}.drift{k,1}(j,1:3) = fread(fileID, [1,3], 'real*4');
+                %nodres{i,1}.timset{j,1}.drift(k,1:3) = fread(fileID, [1,3], 'real*4');
             catch
                 eofile = 1;
-                nodres{i,1}.timen = j-1;
-                disp(['End of file reached. Time No: ', num2str(nodres{i,1}.timen)]);
+                analys{i,1}.timen = j-1;
+                disp(['End of file reached. Data No: ', num2str(analys{i,1}.timen)]);
                 break;
-            end          
+            end
+            
         end
+        
         j = j+1;
-    end
-    fclose(fileID);    
+    end    
+    fclose(fileID);
 end
+
+for i = 1:nanalysis
+    for k = 1:NDRFT
+        analys{i,1}.maxdrift(k,1) = analys{i,1}.drift{k,1}(end,2);
+        analys{i,1}.mindrift(k,1) = analys{i,1}.drift{k,1}(end,3);
+    end
+end
+
+
+if nanalysis >=2
+    summax = zeros(NDRFT,1);
+    summin = zeros(NDRFT,1);
+    for i = 2:nanalysis
+        summax = summax + analys{i,1}.maxdrift;
+        summin = summin + analys{i,1}.mindrift;
+    end
+    avemaxdrift = summax / (nanalysis - 1);
+    avemindrift = summin / (nanalysis - 1);
+else
+    avemaxdrift = analys{i,1}.maxdrift;
+    avemindrift = analys{i,1}.mindrift;
+end
+
+end
+
+

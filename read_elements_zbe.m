@@ -1,3 +1,5 @@
+function [nelgroup, nelems, nnodsofelems,elemgroupdesc,elgroupnodes] = read_elements_zbe(path_of_analysis)
+
 % PERFORM 3D Binary Files Reader
 % by Baris Erkus
 %
@@ -33,26 +35,38 @@
 % Element Group number (or description) , search the ZBD file to get the
 % node number(s), then search the ZBE file to get the element number.
 
-clear all; close all;
 
 file_name = 'ZBE';
-fileID = fopen(file_name);
+file_path = [path_of_analysis, '\', file_name];
+fileID = fopen(file_path);
 
 
 % Control Record
 nelgroup = fread(fileID, [1,1], 'integer*4'); %Number of element groups
 
+nelems = zeros(nelgroup,1);
+nnodsofelems = zeros(nelgroup,1);
+elemgroupdesc = cell(nelgroup,1);
+elgroupnodes = cell(nelgroup,1);
 
 for i = 1: nelgroup
     
-    elgroup(i).nels = fread(fileID, [1,1], 'integer*4');     %No of Elements in group i
-    elgroup(i).nnod = fread(fileID, [1,1], 'integer*4');     %No of nodes per element (NNOD)
-    elgroup(i).desc = char(fread(fileID, [1,40], 'char*1')); %Element group description
+    nelems(i,1) = fread(fileID, [1,1], 'integer*4');           %No of Elements in group i
+    nnodsofelems(i,1) = fread(fileID, [1,1], 'integer*4');     %No of nodes per element (NNOD)
+    elemgroupdesc{i,1} = fread(fileID, [1,40], '*char');       %Element group description
     
-    for j = 1:elgroup(i).nels
-        for k = 1:elgroup(i).nnod
-            elgroup(i).elemnode(j,k) = fread(fileID, [1,1], 'integer*4');
+    
+    nodes = zeros(nelems(i),nnodsofelems(i));
+    
+    %Connectivity
+    for j = 1:nelems(i)
+        for k = 1:nnodsofelems(i)
+            nodes(j,k) = fread(fileID, [1,1], 'integer*4');
         end
     end
+    elgroupnodes{i} = nodes;
 end
+
 fclose(fileID);
+
+end

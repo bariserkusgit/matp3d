@@ -1,3 +1,5 @@
+function [ndrift, driftnodes, driftname, driftdesc] = read_drifts_zbd(path_of_analysis)
+
 % PERFORM 3D Binary Files Reader
 % by Baris Erkus
 %
@@ -34,31 +36,36 @@
 % then search the ZBD file to get the drift number.
 
 
-clear all; close all;
 file_name = 'ZBD';
-fileID = fopen(file_name);
+file_path = [path_of_analysis, '\', file_name];
+fileID = fopen(file_path);
 
 for i = 1:1
     % Control Record
     ndrift = fread(fileID, [1,1], 'integer*4');     %Number of drifts
     
     %temp readings
-    temp.lower(i,1) = fread(fileID, [1,1], 'integer*4');      
-    temp.nodeK(i,1) = fread(fileID, [1,1], 'integer*4');      
-    temp.nodeL(i,1) = fread(fileID, [1,1], 'integer*4');      
-    temp.driftname{i,1} = fread(fileID, [1,8],  '*char');     
-    temp.driftdesc{i,1} = fread(fileID, [1,40], '*char');     
+    temp = fread(fileID, [1,1], 'integer*4');      
+    temp = fread(fileID, [1,1], 'integer*4');      
+    temp = fread(fileID, [1,1], 'integer*4');      
+    temp = fread(fileID, [1,8],  '*char');     
+    temp = fread(fileID, [1,40], '*char');     
 end
+
+driftnodes = zeros(ndrift,4);
+driftname = cell(ndrift,1);
+driftdesc = cell(ndrift,1);
 
 %For each drift record
 for i = 1:ndrift
-    drift.upper(i,1) = fread(fileID, [1,1], 'integer*4');      %Upper or Node I
-    drift.lower(i,1) = fread(fileID, [1,1], 'integer*4');      %Lower or Node J
-    drift.nodeK(i,1) = fread(fileID, [1,1], 'integer*4');      %Node K number
-    drift.nodeL(i,1) = fread(fileID, [1,1], 'integer*4');      %Node L number
-    drift.driftname{i,1} = fread(fileID, [1,8],  '*char');     %Drift name
-    drift.driftdesc{i,1} = fread(fileID, [1,40], '*char');     %Drift description
+    driftnodes(i,1) = fread(fileID, [1,1], 'integer*4');      %Upper or Node I
+    driftnodes(i,2) = fread(fileID, [1,1], 'integer*4');      %Lower or Node J
+    driftnodes(i,3) = fread(fileID, [1,1], 'integer*4');      %Node K number
+    driftnodes(i,4) = fread(fileID, [1,1], 'integer*4');      %Node L number
+    driftname{i,1} = fread(fileID, [1,8],  '*char');     %Drift name
+    driftdesc{i,1} = fread(fileID, [1,40], '*char');     %Drift description
 end
 fclose(fileID);
 
-drift.nodes=[drift.upper, drift.lower, drift.nodeK, drift.nodeL];
+
+end

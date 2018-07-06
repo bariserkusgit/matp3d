@@ -1,12 +1,12 @@
 clear all; close all;
 
-load results.mat
+load nodedrifts.mat
 
-anno = 2;
-driftno = 30;
+anno = 4;
+driftno = 45;
 
 for i = 1:nodres{anno,1}.timen
-    drif(i,1:3) = nodres{anno,1}.timset{i,1}.disps(driftno,1:3);
+    drif(i,1:3) = nodres{anno,1}.timset{i,1}.drift(driftno,1:3);
     
 end
 
