@@ -9,7 +9,8 @@
 clear all; close all;
 
 % Folder Information
-dirloc = 'E:\completed\Ova';
+% dirloc = 'E:\completed\Ova';
+dirloc = 'C:\completed\zorlu';
 
 analysisdirectory =  'NLTH-001';
 
