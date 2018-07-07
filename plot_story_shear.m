@@ -62,3 +62,19 @@ for ind =1:2;
     title(['H',num2str(ind)]);
     
 end
+
+for ind =1:2;
+    
+    sect_gr = 4:4+42;
+    
+    %figure; plot(analys{2,1}.section{sect_index,1}.forces(:,ind));
+    figure; hold on;
+    for i = 2:8;
+        plot(sect_gr, analys{i,1}.minforce(sect_gr,ind), 'color', gray_level*ones(1,3));
+        plot(sect_gr, analys{i,1}.maxforce(sect_gr,ind), 'color', gray_level*ones(1,3));
+    end
+    plot(sect_gr, avemin(sect_gr,ind), 'k', sect_gr, avemax(sect_gr,ind), 'k', 'LineWidth', 2 );
+    grid on;
+    title(['H',num2str(ind)]);
+    
+end
