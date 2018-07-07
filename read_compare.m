@@ -12,7 +12,6 @@ clear all; close all;
 %dirloc = 'E:\completed\Ova';
 dirloc = 'E:\completed\Zorlu';
 
-
 analysisdirectory =  'NLTH-001';
 
 dirs = dir(dirloc);
